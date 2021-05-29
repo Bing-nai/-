@@ -1,0 +1,14 @@
+###将非字符转换成换行符，大写字符转小写，并导出结果###
+cat 1.txt | tr -cs "[:alnum:]" "/n" | tr "[:upper:]" "[:lower:]" >1_row.txt
+###查看总行数（分母）###
+cat 1_row.txt | wc
+###去重查看总行数（分子）###
+sort -u 1_row.txt | wc
+
+
+###词形还原###
+###软件使用请参照###
+###https://www.cnblogs.com/kaituorensheng/p/3437807.html###
+###软件官网###
+###https://www.cis.lmu.de/~schmid/tools/TreeTagger/###
+cat ../project/iepa_bioc_row_sort.txt | cmd/tree-tagger-english >iepa_bioc_tt.txt

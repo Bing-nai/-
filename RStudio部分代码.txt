@@ -1,0 +1,231 @@
+###TTR部分###
+library(dplyr)
+A<- read.table(file.choose())
+x1<-data.frame()
+x2<-data.frame()
+a1<-data.frame()
+a2<-data.frame()
+###抽样###
+for (i in 1:5000){
+x<-sample(A[,1],size=726594,prob=NULL)
+x<-data.frame(x)
+x1<-nrow(x)
+x2<-nrow(distinct(x))
+a1[i,1]<-x1
+a2[i,1]<-x2
+}
+###计算抽样的一组TTR###
+a<-a2/a1
+###正态性检验###
+shapiro.test(a[,1])
+###同理完成b,c,d,e组的抽样###
+###两两之间方差同质性检验###
+var.test(a[,1],b[,1])
+var.test(a[,1],c[,1])
+var.test(a[,1],d[,1])
+var.test(a[,1],e[,1])
+var.test(b[,1],c[,1])
+var.test(b[,1],d[,1])
+var.test(b[,1],e[,1])
+var.test(c[,1],d[,1])
+var.test(c[,1],e[,1])
+var.test(d[,1],e[,1])
+###两两之间t检验###
+t.test(a,b,paired=FALSE,var.equal=F)
+t.test(a,c,paired=FALSE,var.equal=F)
+t.test(a,d,paired=FALSE,var.equal=F)
+t.test(a,e,paired=FALSE,var.equal=F)
+t.test(b,c,paired=FALSE,var.equal=F)
+t.test(b,d,paired=FALSE,var.equal=F)
+t.test(b,e,paired=FALSE,var.equal=F)
+t.test(c,d,paired=FALSE,var.equal=F)
+t.test(c,e,paired=FALSE,var.equal=F)
+t.test(d,e,paired=FALSE,var.equal=F)
+###箱形图绘制###
+y<-cbind(c(a[,1]),c(b[,1]),c(c[,1]),c(d[,1]),c(e[,1]))
+y<-matrix(y,nrow=25000,ncol=1)
+f<-factor(rep(c("Academic","Science Popularity","Aimed_bioc","Genereg_bioc","Iepa_bioc"),each=5000))
+data<-data.frame(y,f)
+boxplot(y~f,data)
+###同理，将数据分组后可进行两组不同类型语料库的对比###
+O<-data.frame(c(A[,1],B[,1]))
+P<-data.frame(c(C[,1],D[,1],E[,1]))
+o1<-data.frame()
+o2<-data.frame()
+p1<-data.frame()
+p2<-data.frame()
+nrow(O)*0.85
+nrow(P)*0.85
+for (i in 1:5000){
+x<-sample(O[,1],size=1373637,prob=NULL)
+x<-data.frame(x)
+x1<-nrow(x)
+x2<-nrow(distinct(x))
+o1[i,1]<-x1
+o2[i,1]<-x2
+}
+for (i in 1:5000){
+x<-sample(P[,1],size=149288,prob=NULL)
+x<-data.frame(x)
+x1<-nrow(x)
+x2<-nrow(distinct(x))
+p1[i,1]<-x1
+p2[i,1]<-x2
+}
+o<-o2/o1
+p<-p2/p1
+shapiro.test(o[,1])
+shapiro.test(p[,1])
+var.test(o[,1],p[,1])
+t.test(o[,1],p[,1],paired=FALSE,var.equal=F)
+y<-cbind(c(o[,1]),c(p[,1]))
+y<-matrix(y,nrow=10000,ncol=1)
+f<-factor(rep(c("Book","Corpus"),each=5000))
+data<-data.frame(y,f)
+boxplot(y~f,data)
+###同理，将书籍类语料库分开即可完成六本书的TTR比较###
+T1<- read.table(file.choose())
+t1<-data.frame()
+t2<-data.frame()
+for (i in 1:5000){
+x<-sample(T1[,1],size=497360,prob=NULL)
+x<-data.frame(x)
+x1<-nrow(x)
+x2<-nrow(distinct(x))
+t1[i,1]<-x1
+t2[i,1]<-x2
+}
+tt1<-t2/t1
+###同理完成剩下5本书藉类语料库TTR的抽样###
+###求均值并对比###
+mean(tt1[,1])
+mean(tt2[,1])
+mean(tt3[,1])
+mean(tt4[,1])
+mean(tt5[,1])
+mean(tt6[,1])
+
+
+###词云部分###
+###用原词替换掉词形还原未被识别的部分###
+Q<-read.table(choose.files())
+W<-read.table(choose.files())
+E<-read.table(choose.files())
+R<-read.table(choose.files())
+T<-read.table(choose.files())
+q<-data.frame(Q[,3])
+###用循环替换###
+for (i in 1:nrow(Q)) {
+if (Q[i,3]=="<unknown>") {
+q[i,1]=Q[i,1]}
+}
+###导出自己想要的结果###
+write.table(q,file="G://1_cxhy.txt",row.names = FALSE, col.names = FALSE)
+###同理，完成剩下几组词形还原文件###
+###以下代码均来自于###
+###http://www.sthda.com/english/wiki/text-mining-and-word-cloud-fundamentals-in-r-5-simple-steps-you-should-know###
+library("tm")
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
+text <- readLines(file.choose())
+docs <- Corpus(VectorSource(text))
+inspect(docs)
+toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+docs <- tm_map(docs, toSpace, "/")
+docs <- tm_map(docs, toSpace, "@")
+docs <- tm_map(docs, toSpace, "\\|")
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeNumbers)
+docs <- tm_map(docs, removeWords, stopwords("english"))
+docs <- tm_map(docs, removeWords, c("blabla1", "blabla2")) 
+docs <- tm_map(docs, removePunctuation)
+docs <- tm_map(docs, stripWhitespace)
+dtm <- TermDocumentMatrix(docs)
+m <- as.matrix(dtm)#内存可能会不够
+v <- sort(rowSums(m),decreasing=TRUE)
+z <- data.frame(word = names(v),freq=v)
+head(z, 10)
+wordcloud(words = z$word, freq = z$freq, min.freq = 1,max.words=300,
+random.order=FALSE, rot.per=0.35, colors=brewer.pal(8, "Dark2"))
+findFreqTerms(dtm, lowfreq = 100)#查找常用词（使用了100次以上的词）
+barplot(z[1:10,]$freq, las = 2, names.arg = z[1:10,]$word,
+col ="lightblue", main ="Most frequent words",
+ylab = "Word frequencies")
+
+
+###句子长度差异分析部分###
+###读入句子长度文件###
+F<- read.table(file.choose())
+G<- read.table(file.choose())
+H<- read.table(file.choose())
+I<- read.table(file.choose())
+J<- read.table(file.choose())
+###筛掉句子长度小于5的部分###
+F1<-subset(F, F[,1] > 5)
+G1<-subset(G, G[,1] > 5)
+H1<-subset(H, H[,1] > 5)
+I1<-subset(I, I[,1] > 5)
+J1<-subset(J, J[,1] > 5)
+f<-data.frame()
+###获取句子长度抽样数据###
+for (k in 1:250000){
+x<-sample(F1[,1],size=1,prob=NULL)
+f[k,1]<-x
+}
+###同理完成剩下几组句子长度抽样###
+###由于大小问题shapiro()无法检验，进行两种检验方法并比较结果###
+ModelData = f[,1]
+shapiro.test(ModelData[0:5000])
+ad.test(ModelData)
+###同理完成剩下组的检验###
+###完成方差同质性检验和t检验###
+var.test(f[,1],g[,1])
+var.test(f[,1],h[,1])
+var.test(f[,1],i[,1])
+var.test(f[,1],j[,1])
+var.test(g[,1],h[,1])
+var.test(g[,1],i[,1])
+var.test(g[,1],j[,1])
+var.test(h[,1],i[,1])
+var.test(h[,1],j[,1])
+var.test(i[,1],j[,1])
+t.test(f,g,paired=FALSE)
+t.test(f,h,paired=FALSE)
+t.test(f,i,paired=FALSE)
+t.test(f,j,paired=FALSE)
+t.test(g,h,paired=FALSE)
+t.test(g,i,paired=FALSE)
+t.test(g,j,paired=FALSE)
+t.test(h,i,paired=FALSE)
+t.test(h,j,paired=FALSE)
+t.test(i,j,paired=FALSE)
+###绘制箱型图###
+y<-cbind(c(f[,1]),c(g[,1]),c(h[,1]),c(i[,1]),c(j[,1]))
+y<-matrix(y,nrow=1250000,ncol=1)
+u<-factor(rep(c("Academic","Science Popularity","Aimed_bioc","Genereg_bioc","Iepa_bioc"),each=250000))
+data<-data.frame(y,u)
+boxplot(y~u,data)
+###发现效果不理想，进行改进###
+boxplot(y~u,data,outline = FALSE)
+###加工数据###
+outliers <-boxplot(f[,1], plot=FALSE)$out##去除数据中的离群值
+f1<-f
+f1<-f1[-which(f1[,1] %in% outliers),]
+###同理去除剩下几组数据离群值###
+###用新数据进行检验，与之前的结果对比###
+f1<-data.frame(matrix(f1,ncol=1))
+g1<-data.frame(matrix(g1,ncol=1))
+h1<-data.frame(matrix(h1,ncol=1))
+i1<-data.frame(matrix(i1,ncol=1))
+j1<-data.frame(matrix(j1,ncol=1))
+t.test(f1,g1,paired=FALSE,var.equal=FALSE)
+t.test(f1,h1,paired=FALSE,var.equal=FALSE)
+t.test(f1,i1,paired=FALSE,var.equal=FALSE)
+t.test(f1,j1,paired=FALSE,var.equal=FALSE)
+t.test(g1,h1,paired=FALSE,var.equal=FALSE)
+t.test(g1,i1,paired=FALSE,var.equal=FALSE)
+t.test(g1,j1,paired=FALSE,var.equal=FALSE)
+t.test(h1,i1,paired=FALSE,var.equal=FALSE)
+t.test(h1,j1,paired=FALSE,var.equal=FALSE)
+t.test(i1,j1,paired=FALSE,var.equal=FALSE)
